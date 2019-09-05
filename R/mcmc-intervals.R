@@ -157,8 +157,8 @@ mcmc_intervals <- function(x,
                            regex_pars = character(),
                            transformations = list(),
                            ...,
-                           prob = 0.5,
-                           prob_outer = 0.9,
+                           prob = 0.0,
+                           prob_outer = 0.95,
                            point_est = c("median", "mean", "none"),
                            rhat = numeric()) {
   check_ignored_arguments(...)
@@ -194,7 +194,7 @@ mcmc_intervals <- function(x,
   args_point <- list(
     mapping = aes_(x = ~ m, y = ~ parameter),
     data = data,
-    size = 4,
+    size = 2,
     shape = 21
   )
 
