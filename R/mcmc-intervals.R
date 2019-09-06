@@ -169,6 +169,7 @@ mcmc_intervals <- function(x,
                               point_est = point_est, rhat = rhat)
 
   color_by_rhat <- rlang::has_name(data, "rhat_rating")
+  color_by_sig <- rlang::has_name(data, "sig")
   no_point_est <- all(data$point_est == "none")
 
   x_lim <- range(c(data$ll, data$hh))
@@ -205,18 +206,16 @@ mcmc_intervals <- function(x,
     args_point$mapping <- args_point$mapping %>%
       modify_aes_(color = ~ rhat_rating,
                   fill = ~ rhat_rating)
-  } else {
-    args_inner$color <- get_color("dark")
-    args_point$color <- get_color("dark_highlight")
-    args_point$fill <- get_color("light")
-  }
-
-  if (sig) {
+  } else if (color_by_sig) {
     args_inner$mapping <- args_inner$mapping %>%
       modify_aes_(color = ~ sig)
     args_point$mapping <- args_point$mapping %>%
-      modify_aes_(color = ~ rhat_rating,
+      modify_aes_(color = ~ sig,
                   fill = ~ sig)
+  } else  {
+    args_inner$color <- get_color("dark")
+    args_point$color <- get_color("dark_highlight")
+    args_point$fill <- get_color("light")
   }
 
   point_func <- if (no_point_est) geom_ignore else geom_point
@@ -229,6 +228,9 @@ mcmc_intervals <- function(x,
   if (color_by_rhat) {
     scale_color <- scale_color_diagnostic("rhat")
     scale_fill <- scale_fill_diagnostic("rhat")
+  } else if (color_by_sig) {
+    scale_color <- scale_color_diagnostic("sig")
+    scale_fill <- scale_fill_diagnostic("sig")
   } else {
     scale_color <- geom_ignore()
     scale_fill <- geom_ignore()
@@ -542,7 +544,7 @@ mcmc_intervals_data <- function(x,
       m  = m_func(.data$value),
       h  = quantile(.data$value, probs[3]),
       hh = quantile(.data$value, probs[4])) %>%
-  mutate(sig = ifelse((ll < 0 & hh < 0) | (ll > 0 & hh > 0), "sig", "na"))
+  mutate(sig = ifelse((ll < 0 & hh < 0) | (ll > 0 & hh > 0), "low", "high"))
 
   if (point_est == "none") {
     data$m <- NULL

@@ -11,8 +11,9 @@
 \title{Plot interval estimates from MCMC draws}
 \usage{
 mcmc_intervals(x, pars = character(), regex_pars = character(),
-  transformations = list(), ..., prob = 0.5, prob_outer = 0.9,
-  point_est = c("median", "mean", "none"), rhat = numeric())
+  transformations = list(), ..., prob = 0, prob_outer = 0.95,
+  point_est = c("median", "mean", "none"), rhat = numeric(),
+  sig = TRUE)
 
 mcmc_areas(x, pars = character(), regex_pars = character(),
   transformations = list(), ..., area_method = c("equal area",

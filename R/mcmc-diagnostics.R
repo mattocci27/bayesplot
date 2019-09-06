@@ -411,17 +411,17 @@ diagnostic_points <- function(size = NULL) {
 
 # Functions wrapping around scale_color_manual() and scale_fill_manual(), used to
 # color the intervals by rhat value
-scale_color_diagnostic <- function(diagnostic = c("rhat", "neff")) {
+scale_color_diagnostic <- function(diagnostic = c("rhat", "neff", "sig")) {
   d <- match.arg(diagnostic)
   diagnostic_color_scale(d, aesthetic = "color")
 }
 
-scale_fill_diagnostic <- function(diagnostic = c("rhat", "neff")) {
+scale_fill_diagnostic <- function(diagnostic = c("rhat", "neff", "sig")) {
   d <- match.arg(diagnostic)
   diagnostic_color_scale(d, aesthetic = "fill")
 }
 
-diagnostic_color_scale <- function(diagnostic = c("rhat", "neff_ratio"),
+diagnostic_color_scale <- function(diagnostic = c("rhat", "neff_ratio", "sig"),
                                    aesthetic = c("color", "fill")) {
   diagnostic <- match.arg(diagnostic)
   aesthetic <- match.arg(aesthetic)
@@ -437,25 +437,29 @@ diagnostic_color_scale <- function(diagnostic = c("rhat", "neff_ratio"),
   )
 }
 
-diagnostic_colors <- function(diagnostic = c("rhat", "neff_ratio"),
-                              aesthetic = c("color", "fill")) {
-  diagnostic <- match.arg(diagnostic)
+diagnostic_colors <- function(diagnostic = c("rhat", "neff_ratio", "sig"),
+                              aesthetic = c("color", "fill")){
   aesthetic <- match.arg(aesthetic)
-  color_levels <- c("light", "mid", "dark")
-  if (diagnostic == "neff_ratio") {
-    color_levels <- rev(color_levels)
-  }
+  if (diagnostic == "sig") {
+    color_levels <- c("light", "dark")
+  } else  color_levels <- c("light", "mid", "dark")
+
   if (aesthetic == "color") {
     color_levels <- paste0(color_levels, "_highlight")
   }
-
   color_labels <- diagnostic_color_labels[[diagnostic]]
 
-  list(diagnostic = diagnostic,
+  list_dat <- list(diagnostic = diagnostic,
        aesthetic = aesthetic,
        color_levels = color_levels,
-       color_labels = color_labels,
-       values = set_names(get_color(color_levels), c("low", "ok", "high")))
+       color_labels = color_labels)
+  
+  if (diagnostic == "sig") {
+    list_dat$values <- set_names(get_color(color_levels), c("high", "low")) 
+  } else {
+    list_dat$values <- set_names(get_color(color_levels), c("low", "ok", "high"))
+  }
+  return(list_dat)
 }
 
 diagnostic_color_labels <- list(
@@ -468,7 +472,10 @@ diagnostic_color_labels <- list(
     low  = expression(N[eff] / N <= 0.1),
     ok   = expression(N[eff] / N <= 0.5),
     high = expression(N[eff] / N > 0.5)
-  )
+  ),
+  sig = c(
+    low  = expression(hat(R) <= 1.05),
+    high = expression(hat(R) > 1.10))
 )
 
 # set x-axis breaks based on rhat values
