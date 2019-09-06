@@ -160,7 +160,8 @@ mcmc_intervals <- function(x,
                            prob = 0.0,
                            prob_outer = 0.95,
                            point_est = c("median", "mean", "none"),
-                           rhat = numeric()) {
+                           rhat = numeric(),
+                           sig = TRUE) {
   check_ignored_arguments(...)
 
   data <- mcmc_intervals_data(x, pars, regex_pars, transformations,
@@ -208,6 +209,14 @@ mcmc_intervals <- function(x,
     args_inner$color <- get_color("dark")
     args_point$color <- get_color("dark_highlight")
     args_point$fill <- get_color("light")
+  }
+
+  if (sig) {
+    args_inner$mapping <- args_inner$mapping %>%
+      modify_aes_(color = ~ sig)
+    args_point$mapping <- args_point$mapping %>%
+      modify_aes_(color = ~ rhat_rating,
+                  fill = ~ sig)
   }
 
   point_func <- if (no_point_est) geom_ignore else geom_point
@@ -532,7 +541,8 @@ mcmc_intervals_data <- function(x,
       l  = quantile(.data$value, probs[2]),
       m  = m_func(.data$value),
       h  = quantile(.data$value, probs[3]),
-      hh = quantile(.data$value, probs[4]))
+      hh = quantile(.data$value, probs[4])) %>%
+  mutate(sig = ifelse((ll < 0 & hh < 0) | (ll > 0 & hh > 0), "sig", "na"))
 
   if (point_est == "none") {
     data$m <- NULL
