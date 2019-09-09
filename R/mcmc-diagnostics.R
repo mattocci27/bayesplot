@@ -432,7 +432,8 @@ diagnostic_color_scale <- function(diagnostic = c("rhat", "neff_ratio", "sig"),
       name = NULL,
       drop = FALSE,
       values = dc$values,
-      labels = dc$color_labels
+      labels = dc$color_labels,
+      guide = dc$guide
     )
   )
 }
@@ -447,17 +448,24 @@ diagnostic_colors <- function(diagnostic = c("rhat", "neff_ratio", "sig"),
   if (aesthetic == "color") {
     color_levels <- paste0(color_levels, "_highlight")
   }
-  color_labels <- diagnostic_color_labels[[diagnostic]]
+
+  if (diagnostic != "sig") {
+    color_labels <- diagnostic_color_labels[[diagnostic]]
+  } else {
+    color_labels <- NULL
+  }
 
   list_dat <- list(diagnostic = diagnostic,
        aesthetic = aesthetic,
        color_levels = color_levels,
        color_labels = color_labels)
-  
+
   if (diagnostic == "sig") {
     list_dat$values <- set_names(get_color(color_levels), c("high", "low")) 
+    list_dat$guide <- FALSE
   } else {
     list_dat$values <- set_names(get_color(color_levels), c("low", "ok", "high"))
+    list_dat$guide <- FALSE
   }
   return(list_dat)
 }
